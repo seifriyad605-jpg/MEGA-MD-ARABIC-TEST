@@ -4,47 +4,81 @@ const cache = new Map();
 const pending = new Map();
 const MAX_CACHE = 2000;
 
+function isOriginalMenu(text) {
+  return typeof text === 'string' && /MEGA MENU/.test(text) &&
+    /(?:Bot|Prefix(?:es)?|Plugins?|Version|Time):/i.test(text) &&
+    /[.!/#]\w+/.test(text);
+}
+
 function hasEnglish(text) {
   return typeof text === 'string' && /[A-Za-z]{2,}/.test(text);
 }
 
 const fixedTranslations = new Map([
-  ['*Usage:*\\n.autoreact on/off', '*طريقة الاستخدام:*\\n.autoreact on/off'],
+  ['*Usage:*\n.autoreact on/off', '*طريقة الاستخدام:*\n.autoreact on/off'],
   ['*✅ Auto-react enabled*', '*✅ تم تمكين التفاعل التلقائي*'],
   ['*❌ Auto-react disabled*', '*❌ تم تعطيل التفاعل التلقائي*']
 ]);
 
 function shouldTranslate(text) {
   if (!hasEnglish(text)) return false;
-  if (/^https?:\/\//i.test(text.trim())) return false;
+  const value = text.trim();
+  if (!value || /^https?:\/\//i.test(value)) return false;
+  if (isOriginalMenu(value)) return false;
   return true;
 }
 
+function protectTokens(text) {
+  const tokens = [];
+  const patterns = [
+    /https?:\/\/\S+/gi,
+    /@[0-9A-Za-z._-]+/g,
+    /\.[a-z][a-z0-9_-]*(?:\s+(?:on|off|add|del|list|enable|disable))?/gi,
+    /\b(?:CRAZY-SEIF|Seif Riyad)\b/g,
+    /\b\d{6,}\b/g
+  ];
+  let out = text;
+  for (const re of patterns) {
+    out = out.replace(re, (match) => {
+      const token = '__MEGA_KEEP_' + tokens.length + '__';
+      tokens.push(match);
+      return token;
+    });
+  }
+  return { out, tokens };
+}
+
+function restoreTokens(text, tokens) {
+  return text.replace(/__MEGA_KEEP_(\d+)__/g, (_, i) => tokens[Number(i)] ?? _);
+}
+
 async function translateText(text) {
-  if (fixedTranslations.has(text.trim())) return fixedTranslations.get(text.trim());
+  const trimmed = text.trim();
+  if (fixedTranslations.has(trimmed)) return fixedTranslations.get(trimmed);
   if (!shouldTranslate(text)) return text;
-  // Keep the original MEGA-MD menu completely unchanged.
-  if (/MEGA MENU|COMMAND INFO|COMMAND:|PREFIXES?:|PLUGINS?:|VERSION:|TIME:|Bot:|Command Info/i.test(text)) return text;
-  const key = text.trim();
-  if (cache.has(key)) return cache.get(key);
-  if (pending.has(key)) return pending.get(key);
+
+  const { out: protectedText, tokens } = protectTokens(text);
+  const key = protectedText.trim();
+
+  if (cache.has(key)) return restoreTokens(cache.get(key), tokens);
+  if (pending.has(key)) return restoreTokens(await pending.get(key), tokens);
 
   const job = (async () => {
     try {
       const result = await translate(key, { from: 'en', to: 'ar' });
-      const out = result?.text || text;
+      const translated = result?.text || key;
       if (cache.size >= MAX_CACHE) cache.delete(cache.keys().next().value);
-      cache.set(key, out);
-      return out;
-    } catch (e) {
-      return text;
+      cache.set(key, translated);
+      return translated;
+    } catch {
+      return key;
     } finally {
       pending.delete(key);
     }
   })();
 
   pending.set(key, job);
-  return job;
+  return restoreTokens(await job, tokens);
 }
 
 async function localizeValue(value) {
@@ -57,7 +91,6 @@ async function localizeValue(value) {
     if (typeof out[key] === 'string') out[key] = await translateText(out[key]);
   }
 
-  // Translate common button/list text without touching IDs or URLs.
   if (Array.isArray(out.buttons)) {
     out.buttons = await Promise.all(out.buttons.map(async (button) => {
       if (!button || typeof button !== 'object') return button;
@@ -69,15 +102,15 @@ async function localizeValue(value) {
     }));
   }
 
-  if (out.sections && Array.isArray(out.sections)) {
+  if (Array.isArray(out.sections)) {
     out.sections = await Promise.all(out.sections.map(async (section) => {
       const s = { ...section };
-      if (s.title) s.title = await translateText(s.title);
+      if (typeof s.title === 'string') s.title = await translateText(s.title);
       if (Array.isArray(s.rows)) {
         s.rows = await Promise.all(s.rows.map(async (row) => {
           const r = { ...row };
-          if (r.title) r.title = await translateText(r.title);
-          if (r.description) r.description = await translateText(r.description);
+          if (typeof r.title === 'string') r.title = await translateText(r.title);
+          if (typeof r.description === 'string') r.description = await translateText(r.description);
           return r;
         }));
       }
@@ -91,16 +124,13 @@ async function localizeValue(value) {
 export function installArabicLocalizer(sock) {
   if (!sock || sock.__arabicLocalizerInstalled) return sock;
   const original = sock.sendMessage.bind(sock);
-
   sock.sendMessage = async function (jid, content, options) {
     try {
-      const localized = await localizeValue(content);
-      return original(jid, localized, options);
+      return original(jid, await localizeValue(content), options);
     } catch {
       return original(jid, content, options);
     }
   };
-
   sock.__arabicLocalizerInstalled = true;
   return sock;
 }
