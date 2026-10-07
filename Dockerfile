@@ -9,6 +9,7 @@ RUN git clone https://github.com/GlobalTechInfo/MEGA-MD . && \
 COPY config.js ./config.js
 COPY arabic-localizer.js ./arabic-localizer.js
 COPY channel-message-config.js ./lib/messageConfig.js
+COPY isAdmin.js ./lib/isAdmin.js
 
 RUN python3 - <<'PY'
 from pathlib import Path
@@ -17,11 +18,13 @@ s = p.read_text()
 if "arabic-localizer" not in s:
     s = s.replace(
         "import commandHandler from './lib/commandHandler.js';",
-        "import commandHandler from './lib/commandHandler.js';\nimport { installArabicLocalizer } from './arabic-localizer.js';"
+        "import commandHandler from './lib/commandHandler.js";
+        "import { installArabicLocalizer } from './arabic-localizer.js';"
     )
 s = s.replace(
     "QasimDev.store = store;",
-    "QasimDev.store = store;\n        installArabicLocalizer(QasimDev);"
+    "QasimDev.store = store;
+        installArabicLocalizer(QasimDev);"
 )
 p.write_text(s)
 PY
