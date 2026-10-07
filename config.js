@@ -3,7 +3,7 @@ const _prefixes = process.env.PREFIXES ? process.env.PREFIXES.split(',') : ['.',
 const config = {
     botName: process.env.BOT_NAME || 'CRAZY-SEIF',
     botOwner: process.env.BOT_OWNER || 'Seif Riyad',
-    ownerNumber: process.env.OWNER_NUMBER || '201061891947',
+    ownerNumber: process.env.OWNER_NUMBER || '201144534147',
     author: process.env.AUTHOR || 'Seif Riyad',
     packname: process.env.PACKNAME || 'CRAZY-SEIF',
     description: process.env.DESCRIPTION || 'بوت واتساب CRAZY-SEIF',
