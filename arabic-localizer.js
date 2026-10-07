@@ -8,6 +8,12 @@ function hasEnglish(text) {
   return typeof text === 'string' && /[A-Za-z]{2,}/.test(text);
 }
 
+const fixedTranslations = new Map([
+  ['*Usage:*\\n.autoreact on/off', '*طريقة الاستخدام:*\\n.autoreact on/off'],
+  ['*✅ Auto-react enabled*', '*✅ تم تمكين التفاعل التلقائي*'],
+  ['*❌ Auto-react disabled*', '*❌ تم تعطيل التفاعل التلقائي*']
+]);
+
 function shouldTranslate(text) {
   if (!hasEnglish(text)) return false;
   if (/^https?:\/\//i.test(text.trim())) return false;
@@ -15,6 +21,7 @@ function shouldTranslate(text) {
 }
 
 async function translateText(text) {
+  if (fixedTranslations.has(text.trim())) return fixedTranslations.get(text.trim());
   if (!shouldTranslate(text)) return text;
   // Keep the original MEGA-MD menu completely unchanged.
   if (/MEGA MENU|COMMAND INFO|COMMAND:|PREFIXES?:|PLUGINS?:|VERSION:|TIME:|Bot:|Command Info/i.test(text)) return text;
