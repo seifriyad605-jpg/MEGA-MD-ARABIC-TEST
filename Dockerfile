@@ -8,6 +8,7 @@ RUN git clone https://github.com/GlobalTechInfo/MEGA-MD . && \
 
 COPY config.js ./config.js
 COPY arabic-localizer.js ./arabic-localizer.js
+COPY channel-message-config.js ./lib/messageConfig.js
 
 RUN python3 - <<'PY'
 from pathlib import Path
