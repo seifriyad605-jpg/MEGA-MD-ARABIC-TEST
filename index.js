@@ -527,23 +527,9 @@ async function main() {
     });
 }
 main();
-// Session cleanup interval
-const sessionDir = path.join(process.cwd(), 'session');
-setInterval(() => {
-    if (!fs.existsSync(sessionDir))
-        return;
-    fs.readdir(sessionDir, (err, files) => {
-        if (err)
-            return;
-        for (const file of files) {
-            if (file === 'creds.json')
-                continue;
-            if (file.startsWith('app-state-sync-key-'))
-                continue;
-            fs.unlink(path.join(sessionDir, file), () => { });
-        }
-    });
-}, 3 * 60 * 1000);
+// IMPORTANT: Never delete files from the Baileys multi-file session.
+// Signal session/key files are required for decrypting incoming messages.
+// Deleting them causes Bad MAC / failed decryption errors.
 // Temp folder setup
 const customTemp = path.join(process.cwd(), 'temp');
 if (!fs.existsSync(customTemp))
