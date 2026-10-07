@@ -4,6 +4,46 @@ const cache = new Map();
 const pending = new Map();
 const MAX_CACHE = 3000;
 
+const commonEnglishFragments = [
+  [/\\bSuccess:\\b/gi, 'تم بنجاح:'],
+  [/\\bError:\\b/gi, 'خطأ:'],
+  [/\\bUsage:\\b/gi, 'طريقة الاستخدام:'],
+  [/\\bAccess Denied:\\b/gi, 'تم رفض الوصول:'],
+  [/\\bAction Denied:\\b/gi, 'تم رفض العملية:'],
+  [/\\bPlease provide\\b/gi, 'من فضلك اكتب'],
+  [/\\bPlease mention a user, reply to a message, or provide a number\\b/gi, 'من فضلك اعمل منشن لعضو أو قم بالرد على رسالة أو اكتب رقم'],
+  [/\\bNo sudo users found\\.?/gi, 'لا يوجد مستخدمون بصلاحيات سودو.'],
+  [/\\bhas been granted Sudo privileges\\.?/gi, 'تم منحه صلاحيات سودو.'],
+  [/\\bSudo privileges revoked from\\b/gi, 'تم سحب صلاحيات سودو من'],
+  [/\\bFailed to add sudo\\.?/gi, 'فشل في إضافة صلاحيات سودو.'],
+  [/\\bFailed to remove sudo\\.?/gi, 'فشل في إزالة صلاحيات سودو.'],
+  [/\\bCannot remove the Main Owner\\.?/gi, 'لا يمكن إزالة المالك الأساسي.'],
+  [/\\bOnly the Main Owner can manage Sudo privileges\\.?/gi, 'المالك الأساسي فقط يمكنه إدارة صلاحيات سودو.'],
+  [/\\bWelcome messages enabled with simple message\\. Use\\b/gi, 'تم تشغيل رسائل الترحيب بالرسالة الافتراضية. استخدم'],
+  [/\\bWelcome messages disabled for this group\\.?/gi, 'تم إيقاف رسائل الترحيب في هذا الجروب.'],
+  [/\\bCustom welcome message set successfully\\.?/gi, 'تم تعيين رسالة الترحيب المخصصة بنجاح.'],
+  [/\\bWelcome messages are already enabled\\.?/gi, 'رسائل الترحيب مفعلة بالفعل.'],
+  [/\\bWelcome messages are already disabled\\.?/gi, 'رسائل الترحيب متوقفة بالفعل.'],
+  [/\\bSUDO MANAGER\\b/gi, 'إدارة سودو'],
+  [/\\bSUDO USERS\\b/gi, 'مستخدمو سودو'],
+  [/\\bAvailable Variables:\\b/gi, 'المتغيرات المتاحة:'],
+  [/\\bEnable welcome messages\\b/gi, 'تشغيل رسائل الترحيب'],
+  [/\\bDisable welcome messages\\b/gi, 'إيقاف رسائل الترحيب'],
+  [/\\bSet a custom welcome message\\b/gi, 'تعيين رسالة ترحيب مخصصة'],
+  [/\\bEnable\\b/gi, 'تشغيل'],
+  [/\\bDisable\\b/gi, 'إيقاف']
+];
+
+function replaceCommonEnglishFragments(text) {
+  if (typeof text !== 'string') return text;
+  let out = text;
+  for (const [pattern, replacement] of commonEnglishFragments) {
+    out = out.replace(pattern, replacement);
+  }
+  return out;
+}
+
+
 function isOriginalMenu(text) {
   return typeof text === 'string' && /MEGA MENU/.test(text) &&
     /(?:Bot|Prefix(?:es)?|Plugins?|Version|Time):/i.test(text) &&
@@ -15,6 +55,15 @@ function hasEnglish(text) {
 }
 
 const fixedTranslations = new Map([
+  [
+    '╭━━━〔 *SUDO MANAGER* 〕━━━┈\\n┃\\n┃ 📝 *Usage:*\\n┃ ▢ .sudo add <@tag/reply/num>\\n┃ ▢ .sudo del <@tag/reply/num>\\n┃ ▢ .sudo list\\n┃\\n╰━━━━━━━━━━━━━━━━━━┈',
+    '╭━━━〔 *إدارة سودو* 〕━━━┈\\n┃\\n┃ 📝 *طريقة الاستخدام:*\\n┃ ▢ .sudo add <@tag/reply/num>\\n┃ ▢ .sudo del <@tag/reply/num>\\n┃ ▢ .sudo list\\n┃\\n╰━━━━━━━━━━━━━━━━━━┈'
+  ],
+  [
+    'Welcome messages *enabled* with simple message. Use *.welcome set [your message]* to customize.',
+    'تم تشغيل رسائل الترحيب بالرسالة الافتراضية. استخدم *.welcome set [your message]* لتخصيصها.'
+  ]
+,
   ['*Usage:*\n.autoreact on/off', '*طريقة الاستخدام:*\n.autoreact on/off'],
   ['*✅ Auto-react enabled*', '*✅ تم تمكين التفاعل التلقائي*'],
   ['*❌ Auto-react disabled*', '*❌ تم تعطيل التفاعل التلقائي*'],
@@ -89,7 +138,7 @@ async function translateLine(line) {
   const job = (async () => {
     try {
       const result = await translate(key, { from: 'en', to: 'ar' });
-      const translated = result?.text || key;
+      const translated = replaceCommonEnglishFragments(result?.text || key);
       if (cache.size >= MAX_CACHE) cache.delete(cache.keys().next().value);
       cache.set(key, translated);
       return translated;
@@ -106,7 +155,7 @@ async function translateLine(line) {
 
 async function translateText(text) {
   const trimmed = text.trim();
-  if (fixedTranslations.has(trimmed)) return fixedTranslations.get(trimmed);
+  if (fixedTranslations.has(trimmed)) return replaceCommonEnglishFragments(fixedTranslations.get(trimmed));
   if (!shouldTranslate(text)) return text;
 
   // Translate each line independently so help/usage messages keep their layout.
