@@ -1,0 +1,73 @@
+export default {
+    command: 'bfdecode',
+    aliases: ['brun', 'bfread'],
+    category: 'tools',
+    description: 'فك أو تشغيل كود Brainfuck',
+    usage: 'قم بالرد على كود BF باستخدام .bfdecode',
+    async handler(sock, message, args, context) {
+        const chatId = context.chatId || message.key.remoteJid;
+        try {
+            let code = args?.join('') || "";
+            const quoted = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+            if (quoted) {
+                code = quoted.conversation ||
+                    quoted.extendedTextMessage?.text ||
+                    quoted.imageMessage?.caption ||
+                    quoted.videoMessage?.caption ||
+                    "";
+            }
+            code = code.trim();
+            if (!code) {
+                return await sock.sendMessage(chatId, { text: '*من فضلك قم بالرد على كود Brainfuck أو اكتبه بعد الأمر.*' }, { quoted: message });
+            }
+            const bf = code.replace(/[^><+\-.,[\]]/g, '');
+            const tape = new Uint8Array(30000);
+            let ptr = 0, pc = 0, output = "", steps = 0;
+            const maxSteps = 100000;
+            while (pc < bf.length && steps < maxSteps) {
+                const char = bf[pc];
+                if (char === '>')
+                    ptr++;
+                else if (char === '<')
+                    ptr--;
+                else if (char === '+')
+                    tape[ptr]++;
+                else if (char === '-')
+                    tape[ptr]--;
+                else if (char === '.')
+                    output += String.fromCharCode(tape[ptr]);
+                else if (char === '[') {
+                    if (tape[ptr] === 0) {
+                        let depth = 1;
+                        while (depth > 0) {
+                            pc++;
+                            if (bf[pc] === '[')
+                                depth++;
+                            if (bf[pc] === ']')
+                                depth--;
+                        }
+                    }
+                }
+                else if (char === ']') {
+                    if (tape[ptr] !== 0) {
+                        let depth = 1;
+                        while (depth > 0) {
+                            pc--;
+                            if (bf[pc] === ']')
+                                depth++;
+                            if (bf[pc] === '[')
+                                depth--;
+                        }
+                    }
+                }
+                pc++;
+                steps++;
+            }
+            await sock.sendMessage(chatId, { text: `*🔓 النتيجة بعد الفك:* \n\n${output || "_لم يتم إنشاء أي نتيجة_"}` }, { quoted: message });
+        }
+        catch (err) {
+            console.error('BF خطأ:', err);
+            await sock.sendMessage(chatId, { text: '❌ حدث خطأ أثناء قراءة الرسالة المقتبس منها.' });
+        }
+    }
+};
