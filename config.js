@@ -7,17 +7,17 @@ const config = {
     ownerNumber: process.env.OWNER_NUMBER || '201061891947',
     author: process.env.AUTHOR || 'Seif Riyad',
     packname: process.env.PACKNAME || 'CRAZY-SEIF',
-    description: process.env.DESCRIPTION || 'High performance multi-device WhatsApp bot',
+    description: process.env.DESCRIPTION || 'بوت واتساب CRAZY-SEIF',
     version: '6.0.0',
     // Bot Config
     prefixes: _prefixes,
     prefix: _prefixes[0],
     commandMode: process.env.COMMAND_MODE || 'public',
-    timeZone: process.env.TIMEZONE || 'Asia/Karachi',
+    timeZone: process.env.TIMEZONE || 'Africa/Cairo',
     // Links
-    channelLink: process.env.CHANNEL_LINK || 'https://whatsapp.com/channel/0029VagJIAr3bbVBCpEkAM07',
-    updateZipUrl: process.env.UPDATE_URL || 'https://github.com/GlobalTechInfo/MEGA-MD/archive/refs/heads/main.zip',
-    ytChannel: process.env.YT_CHANNEL || 'GlobalTechInfo',
+    channelLink: process.env.CHANNEL_LINK || '',
+    updateZipUrl: process.env.UPDATE_URL || '',
+    ytChannel: process.env.YT_CHANNEL || 'CRAZY-SEIF',
     // Session
     sessionId: process.env.SESSION_ID || '',
     pairingNumber: process.env.PAIRING_NUMBER || '',
