@@ -20,7 +20,7 @@ export default {
             if (!fs.existsSync(sessionDir)) {
                 return await sock.sendMessage(chatId, { text: '*مجلد الجلسة غير موجود!*', ...channelInfo });
             }
-            let filesتم حذف = 0;
+            let filesDeleted = 0;
             let errors = 0;
             const errorDetails = [];
             await sock.sendMessage(chatId, { text: '🔍 جاري تحسين ملفات الجلسة لتحسين الأداء...', ...channelInfo });
@@ -40,7 +40,7 @@ export default {
                     continue;
                 try {
                     fs.unlinkSync(path.join(sessionDir, file));
-                    filesتم حذف++;
+                    filesDeleted++;
                 }
                 catch (err) {
                     errors++;
@@ -49,7 +49,7 @@ export default {
             }
             const msgText = `✅ تم حذف ملفات الجلسة بنجاح!\n\n` +
                 `📊 الإحصائيات:\n` +
-                `• إجمالي الملفات المحذوفة: ${filesتم حذف}\n` +
+                `• إجمالي الملفات المحذوفة: ${filesDeleted}\n` +
                 `• ملفات مزامنة حالة التطبيق: ${appStateSyncCount}\n` +
                 `• ملفات المفاتيح المسبقة: ${preKeyCount}\n${ 
                 errors > 0 ? `\n⚠️ أخطاء حدثت: ${errors}\n${errorDetails.join('\n')}` : ''}`;
