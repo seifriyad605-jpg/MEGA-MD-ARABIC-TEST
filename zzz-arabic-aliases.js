@@ -1,4 +1,4 @@
-import commandHandler from './lib/commandHandler.js';
+import commandHandler from '../lib/commandHandler.js';
 
 const arabicAliases = {
   menu: ['قائمة', 'الاوامر', 'الأوامر', 'اوامر', 'مساعدة', 'مساعده'],
