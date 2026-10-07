@@ -1,5 +1,5 @@
-import config from './config.js';
-import commandHandler from './lib/commandHandler.js';
+import config from '../config.js';
+import commandHandler from '../lib/commandHandler.js';
 
 export default {
   command: 'قائمة',
