@@ -16,6 +16,8 @@ function shouldTranslate(text) {
 
 async function translateText(text) {
   if (!shouldTranslate(text)) return text;
+  // Keep the original MEGA-MD menu completely unchanged.
+  if (/MEGA MENU|COMMAND INFO|COMMAND:|PREFIXES?:|PLUGINS?:|VERSION:|TIME:|Bot:|Command Info/i.test(text)) return text;
   const key = text.trim();
   if (cache.has(key)) return cache.get(key);
   if (pending.has(key)) return pending.get(key);
