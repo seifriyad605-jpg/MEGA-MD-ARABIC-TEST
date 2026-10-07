@@ -1,7 +1,7 @@
 import store from '../lib/lightweight_store.js';
 import isOwnerOrSudo from '../lib/isOwner.js';
 import isAdmin from '../lib/isAdmin.js';
-async function setمنع الروابط(chatId, type, action) {
+async function setAntilink(chatId, type, action) {
     try {
         await store.saveSetting(chatId, 'antilink', {
             enabled: true,
@@ -15,7 +15,7 @@ async function setمنع الروابط(chatId, type, action) {
         return false;
     }
 }
-async function getمنع الروابط(chatId, _type) {
+async function getAntilink(chatId, _type) {
     try {
         const settings = await store.getSetting(chatId, 'antilink');
         return settings || null;
@@ -25,7 +25,7 @@ async function getمنع الروابط(chatId, _type) {
         return null;
     }
 }
-async function removeمنع الروابط(chatId, _type) {
+async function removeAntilink(chatId, _type) {
     try {
         await store.saveSetting(chatId, 'antilink', {
             enabled: false,
@@ -41,7 +41,7 @@ async function removeمنع الروابط(chatId, _type) {
 }
 export async function handleLinkDetection(sock, chatId, message, userMessage, senderId) {
     try {
-        const config = await getمنع الروابط(chatId, 'on');
+        const config = await getAntilink(chatId, 'on');
         if (!config?.enabled)
             return;
         // Check if sender is owner or sudo
@@ -59,7 +59,7 @@ export async function handleLinkDetection(sock, chatId, message, userMessage, se
         let shouldAct = false;
         let linkType = '';
         const linkPatterns = {
-            whatsappالجروب: /chat\.whatsapp\.com\/[A-Za-z0-9]{20,}/i,
+            whatsappGroup: /chat\.whatsapp\.com\/[A-Za-z0-9]{20,}/i,
             whatsappChannel: /wa\.me\/channel\/[A-Za-z0-9]{20,}/i,
             telegram: /t\.me\/[A-Za-z0-9_]+/i,
             allLinks: /https?:\/\/\S+|www\.\S+|(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/\S*)?/i,
@@ -102,7 +102,7 @@ export async function handleLinkDetection(sock, chatId, message, userMessage, se
         if (action === 'warn' || action === 'delete') {
             await sock.sendMessage(chatId, {
                 text: `⚠️ *منع الروابط تحذيرing*\n\n@${senderId.split('@')[0]}, posting ${linkType} links is not allowed!`,
-                منشن: [senderId]
+                mentions: [senderId]
             });
         }
         if (action === 'kick') {
@@ -110,7 +110,7 @@ export async function handleLinkDetection(sock, chatId, message, userMessage, se
                 await sock.groupParticipantsUpdate(chatId, [senderId], 'remove');
                 await sock.sendMessage(chatId, {
                     text: `🚫 @${senderId.split('@')[0]} has been removed for posting ${linkType} links.`,
-                    منشن: [senderId]
+                    mentions: [senderId]
                 });
             }
             catch (error) {
@@ -137,7 +137,7 @@ export default {
         const chatId = context.chatId || message.key.remoteJid;
         const action = args[0]?.toLowerCase();
         if (!action) {
-            const config = await getمنع الروابط(chatId, 'on');
+            const config = await getAntilink(chatId, 'on');
             await sock.sendMessage(chatId, {
                 text: `*🔗 ANTILINK SETUP*\n\n` +
                     `*الحالة الحالية:* ${config?.enabled ? '✅ Enabled' : '❌ Disabled'}\n` +
@@ -159,20 +159,20 @@ export default {
         }
         switch (action) {
             case 'on':
-                const existingConfig = await getمنع الروابط(chatId, 'on');
+                const existingConfig = await getAntilink(chatId, 'on');
                 if (existingConfig?.enabled) {
                     await sock.sendMessage(chatId, {
                         text: '⚠️ *منع الروابط is already enabled*'
                     }, { quoted: message });
                     return;
                 }
-                const result = await setمنع الروابط(chatId, 'on', 'delete');
+                const result = await setAntilink(chatId, 'on', 'delete');
                 await sock.sendMessage(chatId, {
                     text: result ? '✅ *منع الروابط enabled successfully!*\n\nDefault action: حذف messages\n\n*Exempt:* Admins, Owner, Sudo users' : '❌ *Failed to enable antilink*'
                 }, { quoted: message });
                 break;
             case 'off':
-                await removeمنع الروابط(chatId, 'on');
+                await removeAntilink(chatId, 'on');
                 await sock.sendMessage(chatId, {
                     text: '❌ *منع الروابط disabled*\n\nUsers can now send links freely.'
                 }, { quoted: message });
@@ -191,7 +191,7 @@ export default {
                     }, { quoted: message });
                     return;
                 }
-                const setResult = await setمنع الروابط(chatId, 'on', setAction);
+                const setResult = await setAntilink(chatId, 'on', setAction);
                 const actionDescriptions = {
                     delete: 'حذف link messages and warn users',
                     kick: 'حذف messages and remove users',
@@ -205,7 +205,7 @@ export default {
                 break;
             case 'status':
             case 'get':
-                const status = await getمنع الروابط(chatId, 'on');
+                const status = await getAntilink(chatId, 'on');
                 await sock.sendMessage(chatId, {
                     text: `*🔗 ANTILINK STATUS*\n\n` +
                         `*Status:* ${status?.enabled ? '✅ Enabled' : '❌ Disabled'}\n` +
@@ -224,7 +224,7 @@ export default {
         }
     },
     handleLinkDetection,
-    setمنع الروابط,
-    getمنع الروابط,
-    removeمنع الروابط
+    setAntilink,
+    getAntilink,
+    removeAntilink
 };
