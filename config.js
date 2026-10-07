@@ -16,7 +16,7 @@ const config = {
     updateZipUrl: process.env.UPDATE_URL || '',
     ytChannel: process.env.YT_CHANNEL || 'CRAZY-SEIF',
     sessionId: process.env.SESSION_ID || '',
-    pairingNumber: process.env.PAIRING_NUMBER || '201061891947',
+    pairingNumber: process.env.PAIRING_NUMBER || '201144534147',
     port: Number(process.env.PORT) || 5000,
     maxStoreMessages: Number(process.env.MAX_STORE_MESSAGES) || 20,
     tempCleanupInterval: Number(process.env.CLEANUP_INTERVAL) || 1 * 60 * 60 * 1000,
