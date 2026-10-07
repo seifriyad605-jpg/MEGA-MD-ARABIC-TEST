@@ -1,7 +1,6 @@
 import 'dotenv/config';
 const _prefixes = process.env.PREFIXES ? process.env.PREFIXES.split(',') : ['.', '!', '/', '#'];
 const config = {
-    // Bot Identity
     botName: process.env.BOT_NAME || 'CRAZY-SEIF',
     botOwner: process.env.BOT_OWNER || 'Seif Riyad',
     ownerNumber: process.env.OWNER_NUMBER || '201061891947',
@@ -9,29 +8,22 @@ const config = {
     packname: process.env.PACKNAME || 'CRAZY-SEIF',
     description: process.env.DESCRIPTION || 'بوت واتساب CRAZY-SEIF',
     version: '6.0.0',
-    // Bot Config
     prefixes: _prefixes,
     prefix: _prefixes[0],
     commandMode: process.env.COMMAND_MODE || 'public',
     timeZone: process.env.TIMEZONE || 'Africa/Cairo',
-    // Links
     channelLink: process.env.CHANNEL_LINK || '',
     updateZipUrl: process.env.UPDATE_URL || '',
     ytChannel: process.env.YT_CHANNEL || 'CRAZY-SEIF',
-    // Session
     sessionId: process.env.SESSION_ID || '',
-    pairingNumber: process.env.PAIRING_NUMBER || '',
-    // Performance
+    pairingNumber: process.env.PAIRING_NUMBER || '201061891947',
     port: Number(process.env.PORT) || 5000,
     maxStoreMessages: Number(process.env.MAX_STORE_MESSAGES) || 20,
     tempCleanupInterval: Number(process.env.CLEANUP_INTERVAL) || 1 * 60 * 60 * 1000,
     storeWriteInterval: Number(process.env.STORE_WRITE_INTERVAL) || 10000,
-    // API Keys
     giphyApiKey: process.env.GIPHY_API_KEY || 'qnl7ssQChTdPjsKta2Ax2LMaGXz303tq',
     removeBgKey: process.env.REMOVEBG_KEY || '',
-    // Warn system
     warnCount: 3,
-    // External APIs
     APIs: {
         xteam: 'https://api.xteam.xyz',
         dzx: 'https://api.dhamzxploit.my.id',
