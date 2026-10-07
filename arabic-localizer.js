@@ -55,6 +55,12 @@ function hasEnglish(text) {
 }
 
 const fixedTranslations = new Map([
+
+  [
+    'ℹ️ *Sorry, only group admins can use this command.*',
+    'ℹ️ *عفواً، الأمر ده متاح لمشرفي الجروب بس.*'
+  ],
+
   [
     '╭━━━〔 *SUDO MANAGER* 〕━━━┈\\n┃\\n┃ 📝 *Usage:*\\n┃ ▢ .sudo add <@tag/reply/num>\\n┃ ▢ .sudo del <@tag/reply/num>\\n┃ ▢ .sudo list\\n┃\\n╰━━━━━━━━━━━━━━━━━━┈',
     '╭━━━〔 *إدارة سودو* 〕━━━┈\\n┃\\n┃ 📝 *طريقة الاستخدام:*\\n┃ ▢ .sudo add <@tag/reply/num>\\n┃ ▢ .sudo del <@tag/reply/num>\\n┃ ▢ .sudo list\\n┃\\n╰━━━━━━━━━━━━━━━━━━┈'
