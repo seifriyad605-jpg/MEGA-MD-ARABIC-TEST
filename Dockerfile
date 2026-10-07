@@ -29,6 +29,13 @@ s = s.replace(
     "QasimDev.store = store;",
     "QasimDev.store = store;\n        installArabicLocalizer(QasimDev);"
 )
+s = s.replace(
+    "                await handleMessages(QasimDev, chatUpdate);",
+    """                const interactiveHandled = await handleInteractiveSelection(QasimDev, mek);
+                if (interactiveHandled)
+                    return;
+                await handleMessages(QasimDev, chatUpdate);"""
+)
 p.write_text(s)
 PY
 
