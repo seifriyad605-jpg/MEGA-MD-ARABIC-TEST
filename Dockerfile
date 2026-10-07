@@ -10,7 +10,8 @@ COPY config.js ./config.js
 COPY arabic-localizer.js ./arabic-localizer.js
 COPY channel-message-config.js ./lib/messageConfig.js
 COPY isAdmin.js ./lib/isAdmin.js
-COPY plugins/attp.js ./plugins/attp.js
+# Copy every manually localized plugin so the Docker image uses our Arabic versions.
+COPY plugins/ ./plugins/
 
 RUN python3 - <<'PY'
 from pathlib import Path
