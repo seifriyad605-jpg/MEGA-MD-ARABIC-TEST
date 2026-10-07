@@ -19,7 +19,7 @@ const commonEnglishFragments = [
   [/\bFailed to remove sudo\\.?/gi, 'فشل في إزالة صلاحيات سودو.'],
   [/\bCannot remove the Main Owner\\.?/gi, 'لا يمكن إزالة المالك الأساسي.'],
   [/\bOnly the Main Owner can manage Sudo privileges\\.?/gi, 'المالك الأساسي فقط يمكنه إدارة صلاحيات سودو.'],
-  [/\bWelcome messages enabled with simple message\\. Use\b/gi, 'تم تشغيل رسائل الترحيب بالرسالة الافتراضية. استخدم'],
+  [/\bWelcome messages\s+\*?enabled\*?\s+with simple message\.\s+Use\b/gi, 'تم تشغيل رسائل الترحيب بالرسالة الافتراضية. استخدم'],
   [/\bWelcome messages disabled for this group\\.?/gi, 'تم إيقاف رسائل الترحيب في هذا الجروب.'],
   [/\bCustom welcome message set successfully\\.?/gi, 'تم تعيين رسالة الترحيب المخصصة بنجاح.'],
   [/\bWelcome messages are already enabled\\.?/gi, 'رسائل الترحيب مفعلة بالفعل.'],
