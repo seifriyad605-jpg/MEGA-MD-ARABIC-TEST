@@ -6,7 +6,6 @@ RUN git clone https://github.com/GlobalTechInfo/MEGA-MD . && \
     npm install && \
     npm install @vitalets/google-translate-api
 
-COPY zzz-arabic-aliases.js ./plugins/zzz-arabic-aliases.js
 COPY arabic-localizer.js ./arabic-localizer.js
 
 RUN python3 - <<'PY'
