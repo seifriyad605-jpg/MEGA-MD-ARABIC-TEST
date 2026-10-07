@@ -2,7 +2,7 @@ import { translate } from '@vitalets/google-translate-api';
 
 const cache = new Map();
 const pending = new Map();
-const MAX_CACHE = 2000;
+const MAX_CACHE = 3000;
 
 function isOriginalMenu(text) {
   return typeof text === 'string' && /MEGA MENU/.test(text) &&
@@ -17,7 +17,28 @@ function hasEnglish(text) {
 const fixedTranslations = new Map([
   ['*Usage:*\n.autoreact on/off', '*طريقة الاستخدام:*\n.autoreact on/off'],
   ['*✅ Auto-react enabled*', '*✅ تم تمكين التفاعل التلقائي*'],
-  ['*❌ Auto-react disabled*', '*❌ تم تعطيل التفاعل التلقائي*']
+  ['*❌ Auto-react disabled*', '*❌ تم تعطيل التفاعل التلقائي*'],
+
+  [
+    '📥 *Welcome Message Setup*\n\n✅ *.welcome on* — Enable welcome messages\n🛠️ *.welcome set Your custom message* — Set a custom welcome message\n🚫 *.welcome off* — Disable welcome messages\n\n*Available Variables:*\n• {user} - Mentions the new member\n• {group} - Shows group name\n• {description} - Shows group description',
+    '📥 *شرح رسائل الترحيب*\n\n✅ *.welcome on* — تشغيل رسائل الترحيب\n🛠️ *.welcome set [الرسالة]* — تعيين رسالة ترحيب مخصصة\n🚫 *.welcome off* — إيقاف رسائل الترحيب\n\n*المتغيرات المتاحة:*\n• {user} - منشن العضو الجديد\n• {group} - اسم الجروب\n• {description} - وصف الجروب'
+  ],
+  [
+    '❌ Invalid command. Use:\n*.welcome on* - Enable\n*.welcome set [message]* - Set custom message\n*.welcome off* - Disable',
+    '❌ الأمر غير صحيح. استخدم:\n*.welcome on* - تشغيل\n*.welcome set [message]* - تعيين رسالة مخصصة\n*.welcome off* - إيقاف'
+  ],
+  [
+    '⚠️ Please provide a custom welcome message. Example: *.welcome set Welcome to the group!*',
+    '⚠️ اكتب رسالة الترحيب التي تريدها. مثال: *.welcome set أهلا وسهلا بالجروب!*'
+  ],
+  [
+    '📤 *Goodbye Message Setup*\n\n✅ *.goodbye on* — Enable goodbye messages\n🛠️ *.goodbye set Your custom goodbye message* — Set a custom goodbye message\n🚫 *.goodbye off* — Disable goodbye messages\n\n*Available Variables:*\n• {user} - Mentions the leaving member\n• {group} - Shows group name',
+    '📤 *شرح رسائل المغادرة*\n\n✅ *.goodbye on* — تشغيل رسائل المغادرة\n🛠️ *.goodbye set [الرسالة]* — تعيين رسالة مغادرة مخصصة\n🚫 *.goodbye off* — إيقاف رسائل المغادرة\n\n*المتغيرات المتاحة:*\n• {user} - منشن العضو الذي غادر\n• {group} - اسم الجروب'
+  ],
+  [
+    '❌ Invalid command. Use:\n*.goodbye on* - Enable\n*.goodbye set [message]* - Set custom goodbye message\n*.goodbye off* - Disable',
+    '❌ الأمر غير صحيح. استخدم:\n*.goodbye on* - تشغيل\n*.goodbye set [message]* - تعيين رسالة مخصصة\n*.goodbye off* - إيقاف'
+  ]
 ]);
 
 function shouldTranslate(text) {
@@ -33,10 +54,13 @@ function protectTokens(text) {
   const patterns = [
     /https?:\/\/\S+/gi,
     /@[0-9A-Za-z._-]+/g,
-    /\.[a-z][a-z0-9_-]*(?:\s+(?:on|off|add|del|list|enable|disable))?/gi,
+    /\{[A-Za-z][A-Za-z0-9_-]*\}/g,
+    /\[[^\]\n]{1,80}\]/g,
+    /\*?\.[a-z][a-z0-9_-]*(?:\s+(?:on|off|set|add|del|list|enable|disable|status|help))?(?:\s+\[[^\]\n]{1,80}\])?\*?/gi,
     /\b(?:CRAZY-SEIF|Seif Riyad)\b/g,
     /\b\d{6,}\b/g
   ];
+
   let out = text;
   for (const re of patterns) {
     out = out.replace(re, (match) => {
@@ -52,13 +76,12 @@ function restoreTokens(text, tokens) {
   return text.replace(/__MEGA_KEEP_(\d+)__/g, (_, i) => tokens[Number(i)] ?? _);
 }
 
-async function translateText(text) {
-  const trimmed = text.trim();
-  if (fixedTranslations.has(trimmed)) return fixedTranslations.get(trimmed);
-  if (!shouldTranslate(text)) return text;
+async function translateLine(line) {
+  if (!line.trim() || !hasEnglish(line)) return line;
 
-  const { out: protectedText, tokens } = protectTokens(text);
+  const { out: protectedText, tokens } = protectTokens(line);
   const key = protectedText.trim();
+  if (!key) return line;
 
   if (cache.has(key)) return restoreTokens(cache.get(key), tokens);
   if (pending.has(key)) return restoreTokens(await pending.get(key), tokens);
@@ -81,12 +104,24 @@ async function translateText(text) {
   return restoreTokens(await job, tokens);
 }
 
+async function translateText(text) {
+  const trimmed = text.trim();
+  if (fixedTranslations.has(trimmed)) return fixedTranslations.get(trimmed);
+  if (!shouldTranslate(text)) return text;
+
+  // Translate each line independently so help/usage messages keep their layout.
+  const lines = text.split('\n');
+  const translated = await Promise.all(lines.map(translateLine));
+  return translated.join('\n');
+}
+
 async function localizeValue(value) {
   if (typeof value === 'string') return translateText(value);
   if (Array.isArray(value)) return Promise.all(value.map(localizeValue));
   if (!value || typeof value !== 'object') return value;
 
   const out = { ...value };
+
   for (const key of ['text', 'caption']) {
     if (typeof out[key] === 'string') out[key] = await translateText(out[key]);
   }
@@ -123,6 +158,7 @@ async function localizeValue(value) {
 
 export function installArabicLocalizer(sock) {
   if (!sock || sock.__arabicLocalizerInstalled) return sock;
+
   const original = sock.sendMessage.bind(sock);
   sock.sendMessage = async function (jid, content, options) {
     try {
@@ -131,6 +167,7 @@ export function installArabicLocalizer(sock) {
       return original(jid, content, options);
     }
   };
+
   sock.__arabicLocalizerInstalled = true;
   return sock;
 }
