@@ -1,17 +1,11 @@
-const ownerChat = 'https://wa.me/' + '201061891947';
-
+// Keep outgoing messages compatible with all WhatsApp clients.
+// Do NOT use externalAdReply here: some recipient clients can suppress
+// the entire message when this metadata is attached, even though the
+// sender/linked device can still see it.
 const channelInfo = {
     contextInfo: {
-        forwardingScore: 1,
-        isForwarded: false,
-        externalAdReply: {
-            title: '01144534147 | CRAZY-SEIF',
-            body: 'اضغط هنا لمراسلة صاحب البوت',
-            mediaType: 1,
-            sourceUrl: ownerChat,
-            showAdAttribution: false,
-            renderLargerThumbnail: false
-        }
+        forwardingScore: 0,
+        isForwarded: false
     }
 };
 
