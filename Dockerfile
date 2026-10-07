@@ -21,8 +21,9 @@ s = p.read_text()
 if "arabic-localizer" not in s:
     s = s.replace(
         "import commandHandler from './lib/commandHandler.js';",
-        "import commandHandler from './lib/commandHandler.js';\nimport { installArabicLocalizer } from './arabic-localizer.js';
-import { handleInteractiveSelection } from './menu-router.js';"
+        """import commandHandler from './lib/commandHandler.js';
+import { installArabicLocalizer } from './arabic-localizer.js';
+import { handleInteractiveSelection } from './menu-router.js';"""
     )
 s = s.replace(
     "QasimDev.store = store;",
