@@ -28,8 +28,11 @@ export default {
     }
     const lines = ['╭━━━〔 🤖 قائمة أوامر MEGA-MD 〕━━━⬣', '┃ البوت: ' + (config.botName || 'MEGA-MD'), '┃ عدد الأوامر: ' + commandHandler.commands.size, '┃'];
     for (const [category, commands] of commandHandler.categories) {
-      lines.push('┃ 🔹 ' + category);
-      for (const command of commands) lines.push('┃   • ' + command);
+      lines.push('┃ 🔹 ' + (config.categoryNames?.[category] || (commands[0] && commandHandler.commands.get(String(commands[0]).toLowerCase())?.arabicCategory) || category));
+      for (const command of commands) {
+        const cmd = commandHandler.commands.get(String(command).toLowerCase());
+        lines.push('┃   • ' + (cmd?.arabicName || command));
+      }
     }
     lines.push('╰━━━━━━━━━━━━━━━━━━━━⬣');
     await sock.sendMessage(chatId, { text: lines.join('\n'), ...channelInfo }, { quoted: message });
