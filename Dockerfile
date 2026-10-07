@@ -18,13 +18,11 @@ s = p.read_text()
 if "arabic-localizer" not in s:
     s = s.replace(
         "import commandHandler from './lib/commandHandler.js';",
-        "import commandHandler from './lib/commandHandler.js";
-        "import { installArabicLocalizer } from './arabic-localizer.js';"
+        "import commandHandler from './lib/commandHandler.js';\nimport { installArabicLocalizer } from './arabic-localizer.js';"
     )
 s = s.replace(
     "QasimDev.store = store;",
-    "QasimDev.store = store;
-        installArabicLocalizer(QasimDev);"
+    "QasimDev.store = store;\n        installArabicLocalizer(QasimDev);"
 )
 p.write_text(s)
 PY
